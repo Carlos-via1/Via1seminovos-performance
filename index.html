@@ -442,7 +442,7 @@ const COLAB_MAP = {
     'VIASUL FIAT - PIEDADE - (PE)','VIASUL LEAPMOTOR RECIFE',
     'Viasul Geely Epitacio','Viasul Geely Imbiribeira',
     'EUROVIA NISSAN - IMBIRIBEIRA - (PE)','EUROVIA RENAULT - IMBIRIBEIRA - (PE)',
-    'NEWVIA BAJAJ IMBIRIBEIRA - (PE)'
+    'NEWVIA BAJAJ IMBIRIBEIRA - (PE)','NEWVIA BAJAJ CARUARU - (PE)'
   ],
   'Ricardo e Carlão': [
     'EUROVIA NISSAN - AFOGADOS - (PE)','EUROVIA OLINDA - (PE)',
@@ -597,7 +597,7 @@ function switchPage(page) {
 function onAvalSheetChange(name) {
   const dt = document.getElementById('avalDashType');
   const type = dt ? dt.value : 'geral';
-  avalData = null; window._colabData = null;
+  avalData = null; window._colabData = null; window._avalData = null;
   loadAvalMonth(name).then(()=>{ if(type==='colab') renderColabDash(); });
 }
 
@@ -1828,8 +1828,8 @@ function sortTop10(tblId, col) {
 
 // ── COLABORADOR DASHBOARD ────────────────────────────────────────────────────
 function computeColabSection(empresas, lojas) {
-  const lojaSet = new Set(lojas.map(l=>l.toLowerCase()));
-  const secEmps = empresas.filter(e => lojaSet.has(e.empresa.toLowerCase()));
+  const lojaSet = new Set(lojas.map(l=>l.toLowerCase().trim()));
+  const secEmps = empresas.filter(e => lojaSet.has(e.empresa.toLowerCase().trim()));
   const tq  = secEmps.reduce((s,r)=>s+r.qtd,0);
   const to30= secEmps.reduce((s,r)=>s+r.o30,0);
   const tav20=secEmps.reduce((s,r)=>s+r.av20,0);
@@ -1912,7 +1912,13 @@ function colabDetailTable(sec, name) {
 }
 
 function renderColabDash() {
-  if(!window._avalData) return;
+  if(!window._avalData) {
+    // Dados ainda carregando — aguarda e tenta novamente
+    const loading = document.getElementById('loadingColab');
+    if(loading) loading.style.display='block';
+    setTimeout(renderColabDash, 300);
+    return;
+  }
   window._colabData = true;
   const empresas = window._avalData.empresas;
   const sheetName = window._avalData.name;
